@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+	<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados da Análise - Completo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card { margin-bottom: 1.5rem; }
+        .table-responsive { max-height: 500px; }
+        .img-fluid { max-width: 100%; height: auto; }
+        .nav-tabs .nav-link.active { font-weight: bold; background-color: #fff; }
+        .small-table { font-size: 0.875rem; }
+        .math-table th { background-color: #e9ecef; }
+        .tab-pane { padding-top: 1rem; }
+        .badge-numero { background-color: #0d6efd; }
+        .variaveis-lista { max-height: 300px; overflow-y: auto; }
+        .export-card { transition: transform 0.2s; }
+        .export-card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>📊 Resultados da Análise Estatística Completa</h1>
+                    <a href="/" class="btn btn-outline-primary">← Nova Análise</a>
+                </div>
+
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="variaveis-tab" data-bs-toggle="tab" 
+                                data-bs-target="#variaveis" type="button" role="tab">
+                            📋 Variáveis
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="estatisticas-tab" data-bs-toggle="tab" 
+                                data-bs-target="#estatisticas" type="button" role="tab">
+                            📈 Estatísticas
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="normalidade-tab" data-bs-toggle="tab" 
+                                data-bs-target="#normalidade" type="button" role="tab">
+                            📊 Normalidade
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="correlacao-tab" data-bs-toggle="tab" 
+                                data-bs-target="#correlacao" type="button" role="tab">
+                            🔗 Correlação
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="variancia-tab" data-bs-toggle="tab" 
+                                data-bs-target="#variancia" type="button" role="tab">
+                            📊 Variância Explicada
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="cargas-tab" data-bs-toggle="tab" 
+                                data-bs-target="#cargas" type="button" role="tab">
+                            🎯 Cargas Fatoriais
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="transformacao-tab" data-bs-toggle="tab" 
+                                data-bs-target="#transformacao" type="button" role="tab">
+                            🔄 Matriz Transformação
+                        </button>
+                    </li>
+                    <!-- NOVA ABA: Exportar -->
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="exportar-tab" data-bs-toggle="tab" 
+                                data-bs-target="#exportar" type="button" role="tab">
+                            💾 Exportar
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="myTabContent">
+                    
+                    <!-- Aba: Variáveis -->
+                    <div class="tab-pane fade show active" id="variaveis" role="tabpanel">
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header bg-success text-white">
+                                        <h5>✅ Variáveis Incluídas na Análise</h5>
+                                        <small class="text-white-50">{{ resultados.variaveis_numericas|length }} variáveis selecionadas</small>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Variável</th>
+                                                        <th>Tipo</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for var in resultados.variaveis_numericas %}
+                                                    <tr>
+                                                        <td><span class="badge badge-numero">{{ loop.index }}</span></td>
+                                                        <td><strong>{{ var }}</strong></td>
+                                                        <td><span class="badge bg-success">Numérica</span></td>
+                                                        <td><span class="badge bg-primary">Incluída</span></td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="mt-3">
+                                            <h6>📝 Informações:</h6>
+                                            <ul class="small">
+                                                <li><strong>Total de variáveis analisadas:</strong> {{ resultados.variaveis_numericas|length }}</li>
+                                                <li><strong>Observações válidas:</strong> {{ resultados.fatorial.n_observacoes }}</li>
+                                                <li><strong>Método de rotação:</strong> {{ resultados.fatorial.rotacao|title }}</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h5>📝 Variáveis Não Incluídas</h5>
+                                        {% if resultados.variaveis_nao_selecionadas %}
+                                        <small class="text-white-50">{{ resultados.variaveis_nao_selecionadas|length }} variáveis disponíveis</small>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-body">
+                                        {% if resultados.variaveis_nao_selecionadas %}
+                                        <div class="variaveis-lista">
+                                            <table class="table table-sm table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Variável</th>
+                                                        <th>Tipo</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for var in resultados.variaveis_nao_selecionadas %}
+                                                    <tr>
+                                                        <td>{{ var }}</td>
+                                                        <td><span class="badge bg-success">Numérica</span></td>
+                                                        <td><span class="badge bg-secondary">Não selecionada</span></td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        {% else %}
+                                        <div class="text-center py-4">
+                                            <div class="text-muted">
+                                                <h6>🎉 Todas as variáveis incluídas!</h6>
+                                                <p class="mb-0">Todas as variáveis numéricas disponíveis foram selecionadas para análise.</p>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Resumo da Análise -->
+                                <div class="card mt-3">
+                                    <div class="card-header bg-info text-white">
+                                        <h5>ℹ️ Resumo da Análise</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row text-center">
+                                            <div class="col-md-6 mb-3">
+                                                <div class="card bg-light">
+                                                    <div class="card-body py-3">
+                                                        <h3 class="text-primary mb-0">{{ resultados.fatorial.n_fatores }}</h3>
+                                                        <small class="text-muted">Fatores Extraídos</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <div class="card bg-light">
+                                                    <div class="card-body py-3">
+                                                        <h3 class="text-success mb-0">{{ resultados.fatorial.n_observacoes }}</h3>
+                                                        <small class="text-muted">Observações</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <h6>📊 Adequação dos Dados:</h6>
+                                            <ul class="small mb-0">
+                                                <li><strong>KMO:</strong> {{ "%.3f"|format(resultados.kmo_bartlett.KMO_Geral) }}</li>
+                                                <li><strong>Teste de Bartlett:</strong> 
+                                                    <span class="badge bg-{{ 'success' if resultados.kmo_bartlett.Bartlett_Significativo else 'warning' }}">
+                                                        {{ 'Significativo' if resultados.kmo_bartlett.Bartlett_Significativo else 'Não Significativo' }}
+                                                    </span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estatísticas Descritivas -->
+                    <div class="tab-pane fade" id="estatisticas" role="tabpanel">
+                        <!-- Conteúdo existente da aba Estatísticas -->
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>📦 Boxplot das Variáveis Selecionadas</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <img src="data:image/png;base64,{{ resultados.boxplot }}" class="img-fluid" alt="Boxplot">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>📈 Estatísticas Descritivas</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Variável</th>
+                                                        <th>Média</th>
+                                                        <th>Mediana</th>
+                                                        <th>DP</th>
+                                                        <th>Assimetria</th>
+                                                        <th>N</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for stat in resultados.estatisticas %}
+                                                    <tr>
+                                                        <td><small>{{ stat.Variável }}</small></td>
+                                                        <td>{{ "%.3f"|format(stat.Média) }}</td>
+                                                        <td>{{ "%.3f"|format(stat.Mediana) }}</td>
+                                                        <td>{{ "%.3f"|format(stat['Desvio Padrão']) }}</td>
+                                                        <td>{{ "%.3f"|format(stat['Assimetria (Skewness)']) }}</td>
+                                                        <td>{{ stat.N }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Estatísticas Detalhadas -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>📋 Estatísticas Descritivas Completas</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-sm small-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Variável</th>
+                                                        <th>Média</th>
+                                                        <th>Mediana</th>
+                                                        <th>DP</th>
+                                                        <th>Variância</th>
+                                                        <th>Assimetria</th>
+                                                        <th>Curtose</th>
+                                                        <th>Mínimo</th>
+                                                        <th>Máximo</th>
+                                                        <th>Q1</th>
+                                                        <th>Q3</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for stat in resultados.estatisticas %}
+                                                    <tr>
+                                                        <td><small>{{ stat.Variável }}</small></td>
+                                                        <td>{{ "%.3f"|format(stat.Média) }}</td>
+                                                        <td>{{ "%.3f"|format(stat.Mediana) }}</td>
+                                                        <td>{{ "%.3f"|format(stat['Desvio Padrão']) }}</td>
+                                                        <td>{{ "%.3f"|format(stat.Variância) }}</td>
+                                                        <td>{{ "%.3f"|format(stat['Assimetria (Skewness)']) }}</td>
+                                                        <td>{{ "%.3f"|format(stat['Curtose (Kurtosis)']) }}</td>
+                                                        <td>{{ "%.3f"|format(stat.Mínimo) }}</td>
+                                                        <td>{{ "%.3f"|format(stat.Máximo) }}</td>
+                                                        <td>{{ "%.3f"|format(stat.Q1) }}</td>
+                                                        <td>{{ "%.3f"|format(stat.Q3) }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testes de Normalidade -->
+                    <div class="tab-pane fade" id="normalidade" role="tabpanel">
+                        <!-- Conteúdo existente da aba Normalidade -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5>📊 Testes de Normalidade</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Variável</th>
+                                                <th>Shapiro-Wilk (Estatística)</th>
+                                                <th>Shapiro-Wilk (p-valor)</th>
+                                                <th>Normal SW</th>
+                                                <th>K-S (Estatística)</th>
+                                                <th>K-S (p-valor)</th>
+                                                <th>Normal K-S</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for teste in resultados.normalidade %}
+                                            <tr>
+                                                <td>{{ teste.Variável }}</td>
+                                                <td>{{ "%.4f"|format(teste['Shapiro-Wilk (Estatística)']) }}</td>
+                                                <td>{{ "%.4f"|format(teste['Shapiro-Wilk (p-valor)']) }}</td>
+                                                <td>
+                                                    <span class="badge bg-{{ 'success' if teste['Shapiro-Wilk (Normal)'] else 'danger' }}">
+                                                        {{ 'Sim' if teste['Shapiro-Wilk (Normal)'] else 'Não' }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ "%.4f"|format(teste['Kolmogorov-Smirnov (Estatística)']) }}</td>
+                                                <td>{{ "%.4f"|format(teste['Kolmogorov-Smirnov (p-valor)']) }}</td>
+                                                <td>
+                                                    <span class="badge bg-{{ 'success' if teste['Kolmogorov-Smirnov (Normal)'] else 'danger' }}">
+                                                        {{ 'Sim' if teste['Kolmogorov-Smirnov (Normal)'] else 'Não' }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6>📝 Interpretação Shapiro-Wilk</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="small">
+                                                    <li><strong>H₀:</strong> Os dados seguem distribuição normal</li>
+                                                    <li><strong>p-valor > 0.05:</strong> Não rejeita H₀ (normal)</li>
+                                                    <li><strong>p-valor ≤ 0.05:</strong> Rejeita H₀ (não normal)</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6>📝 Interpretação Kolmogorov-Smirnov</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="small">
+                                                    <li>Compara distribuição empírica com normal teórica</li>
+                                                    <li>Mais sensível a diferenças nas caudas da distribuição</li>
+                                                    <li>Recomendado para amostras maiores (>50)</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Correlação -->
+                    <div class="tab-pane fade" id="correlacao" role="tabpanel">
+                        <!-- Conteúdo existente da aba Correlação -->
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>🔗 Matriz de Correlação - Heatmap</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <img src="data:image/png;base64,{{ resultados.correlacao.heatmap }}" class="img-fluid" alt="Heatmap Correlação">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>📊 Testes KMO e Bartlett</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-bordered">
+                                            <tr>
+                                                <th class="bg-light">Teste de Esfericidade de Bartlett</th>
+                                                <td>{{ "%.4f"|format(resultados.kmo_bartlett.Bartlett_p_valor) }}</td>
+                                                <td>
+                                                    <span class="badge bg-{{ 'success' if resultados.kmo_bartlett.Bartlett_Significativo else 'danger' }}">
+                                                        {{ 'Significativo' if resultados.kmo_bartlett.Bartlett_Significativo else 'Não Significativo' }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th class="bg-light">KMO Geral</th>
+                                                <td colspan="2">{{ "%.4f"|format(resultados.kmo_bartlett.KMO_Geral) }}</td>
+                                            </tr>
+                                        </table>
+                                        
+                                        <div class="mt-4">
+                                            <h6>📈 KMO por Variável:</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Variável</th>
+                                                            <th>KMO</th>
+                                                            <th>Adequação</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for var_name, kmo_value in resultados.kmo_bartlett.KMO_Variaveis.items() %}
+                                                        <tr>
+                                                            <td>{{ var_name }}</td>
+                                                            <td>{{ "%.4f"|format(kmo_value) }}</td>
+                                                            <td>
+                                                                {% if kmo_value >= 0.8 %}
+                                                                <span class="badge bg-success">Excelente</span>
+                                                                {% elif kmo_value >= 0.7 %}
+                                                                <span class="badge bg-primary">Boa</span>
+                                                                {% elif kmo_value >= 0.6 %}
+                                                                <span class="badge bg-warning">Regular</span>
+                                                                {% else %}
+                                                                <span class="badge bg-danger">Ruim</span>
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="alert alert-info mt-3">
+                                            <h6>💡 Interpretação KMO:</h6>
+                                            <ul class="mb-0 small">
+                                                <li><strong>> 0.9:</strong> Maravilhoso</li>
+                                                <li><strong>0.8 - 0.9:</strong> Meritório</li>
+                                                <li><strong>0.7 - 0.8:</strong> Médio</li>
+                                                <li><strong>0.6 - 0.7:</strong> Medíocre</li>
+                                                <li><strong>< 0.6:</strong> Inaceitável</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                   					
+						<!-- MAtriz anti-imagem -->
+						<div class="row mt-4">
+							<div class="col-md-6">
+								<div class="card">
+									<div class="card-header" style="background-color: #2F4F4F; color: white;">
+										<h5>🔄 Matriz de Correlação Anti-Imagem</h5>
+										<small class="text-warning">Correlações Parciais (controle para outras variáveis)</small>
+									</div>
+									<div class="card-body">
+										<img src="data:image/png;base64,{{ resultados.fatorial.heatmap_anti_imagem }}" class="img-fluid" alt="Heatmap Anti-Imagem">
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="card">
+									<div class="card-header" style="background-color: #2F4F4F; color: white;">
+										<h5>📖 Interpretação da Matriz Anti-Imagem</h5>
+									</div>
+									<div class="card-body">
+										<h6>🎯 O que é a Matriz Anti-Imagem?</h6>
+										<p class="small">
+											A <strong>matriz anti-imagem</strong> mostra as <strong>correlações parciais</strong> entre cada par de variáveis, 
+											<strong>controlando pelo efeito das demais variáveis</strong> no conjunto de dados.
+										</p>
+                
+										<h6>📊 Como interpretar:</h6>
+										<ul class="small">
+											<li><strong>Valores próximos de 0:</strong> Correlação parcial fraca</li>
+											<li><strong>Valores positivos altos:</strong> Forte correlação positiva direta</li>
+											<li><strong>Valores negativos altos:</strong> Forte correlação negativa direta</li>
+											<li><strong>Diagonal principal:</strong> Representa a adequação de cada variável (não mostrada no gráfico)</li>
+										</ul>
+                
+										<h6>🔍 Uso na Análise Fatorial:</h6>
+										<ul class="small">
+											<li>Identifica relações <strong>diretas</strong> entre variáveis</li>
+											<li>Ajuda a detectar <strong>multicolinearidade</strong></li>
+											<li>Complementa a análise da matriz de correlação de Pearson</li>
+											<li>Valores altos sugerem que as variáveis compartilham variância única</li>
+										</ul>
+                
+										<div class="alert alert-warning mt-3">
+											<h6>💡 Dica Importante:</h6>
+											<p class="small mb-0">
+												Compare com a matriz de correlação regular. Se os padrões forem similares, 
+												as correlações são robustas. Se diferirem muito, pode indicar relações espúrias.
+											</p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Matriz Anti-Imagem - Versão Corrigida -->
+						<div class="row mt-4">
+							<div class="col-12">
+								<div class="card">
+									<div class="card-header">
+										<h5>Matriz de Correlação Anti-Imagem</h5>
+										<small>Diagonal principal mostra a Medida de Adequação da Amostra (MAS) para cada variável</small>
+									</div>
+									<div class="card-body">
+										<div class="table-responsive">
+										<table class="table table-bordered table-sm">
+												<thead>
+													<tr>
+														<th>Variável</th>
+														{% for var in resultados.variaveis_numericas %}
+														<th class="text-center">{{ var }}</th>
+														{% endfor %}
+													</tr>
+												</thead>
+												<tbody>
+													{% for i in range(resultados.variaveis_numericas|length) %}
+													<tr>
+														<td><strong>{{ resultados.variaveis_numericas[i] }}</strong></td>
+														{% for j in range(resultados.variaveis_numericas|length) %}
+														{% set valor = resultados.fatorial.matriz_anti_imagem[i, j] %}
+														{% if i == j %}
+														<td class="text-center bg-info text-white">
+															<strong>{{ "%.3f"|format(valor) }}</strong>
+														</td>
+														{% else %}
+														<td class="text-center">
+															{{ "%.3f"|format(valor) }}
+														</td>
+														{% endif %}
+														{% endfor %}
+													</tr>
+													{% endfor %}
+												</tbody>
+											</table>
+										</div>
+										<div class="mt-3">
+											<small class="text-muted">
+												<strong>💡 Interpretação:</strong><br>
+												<strong>Diagonal (MAS):</strong> Valores entre 0-1. >0.8 = Excelente, 0.7-0.8 = Bom, 0.6-0.7 = Regular, <0.5 = Ruim<br>
+												<strong>Fora da diagonal:</strong> Correlações parciais entre variáveis (controlando outras variáveis)
+											</small>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+                    <!-- Variância Explicada -->
+                    <div class="tab-pane fade" id="variancia" role="tabpanel">
+                        <!-- Conteúdo existente da aba Variância -->
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>📊 Scree Plot</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <img src="data:image/png;base64,{{ resultados.fatorial.scree_plot }}" class="img-fluid" alt="Scree Plot">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>ℹ️ Informações da Análise Fatorial</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <th class="bg-light">Número de Fatores:</th>
+                                                <td><strong>{{ resultados.fatorial.n_fatores }}</strong></td>
+                                            </tr>
+                                            <tr>
+                                                <th class="bg-light">Método de Rotação:</th>
+                                                <td><strong>{{ resultados.fatorial.rotacao|title }}</strong></td>
+                                            </tr>
+                                            <tr>
+                                                <th class="bg-light">Número de Variáveis:</th>
+                                                <td>{{ resultados.fatorial.n_variaveis }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="bg-light">Número de Observações:</th>
+                                                <td>{{ resultados.fatorial.n_observacoes }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="bg-light">Iterações para Convergência:</th>
+                                                <td>{{ resultados.fatorial.n_iteracoes }}</td>
+                                            </tr>
+                                        </table>
+                                        
+                                        <div class="alert alert-success mt-3">
+                                            <h6>🎯 Critério de Kaiser:</h6>
+                                            <p class="mb-0">Fatores com autovalor > 1 foram retidos para análise.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>📈 Variância Total Explicada - Solução Inicial</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-sm small-table math-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Fator</th>
+                                                        <th>Autovalor</th>
+                                                        <th>% Variância</th>
+                                                        <th>% Acumulado</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for i in range(resultados.fatorial.n_fatores) %}
+                                                    <tr>
+                                                        <td><strong>{{ i+1 }}</strong></td>
+                                                        <td>{{ "%.3f"|format(resultados.fatorial.variancia_inicial.autovalores[i]) }}</td>
+                                                        <td>{{ "%.3f"|format(resultados.fatorial.variancia_inicial.percentual[i]) }}%</td>
+                                                        <td>{{ "%.3f"|format(resultados.fatorial.variancia_inicial.acumulado[i]) }}%</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>📊 Variância Total Explicada - Solução Rotacionada</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-sm small-table math-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Fator</th>
+                                                        <th>Soma Quadrados</th>
+                                                        <th>% Variância</th>
+                                                        <th>% Acumulado</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for i in range(resultados.fatorial.n_fatores) %}
+                                                    <tr>
+                                                        <td><strong>{{ i+1 }}</strong></td>
+                                                        <td>{{ "%.3f"|format(resultados.fatorial.variancia_rotacionada.soma_quadrados[i]) }}</td>
+                                                        <td>{{ "%.3f"|format(resultados.fatorial.variancia_rotacionada.percentual[i]) }}%</td>
+                                                        <td>{{ "%.3f"|format(resultados.fatorial.variancia_rotacionada.acumulado[i]) }}%</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cargas Fatoriais -->
+                    <div class="tab-pane fade" id="cargas" role="tabpanel">
+                        <!-- Conteúdo existente da aba Cargas -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5>🎯 Matriz de Cargas Fatoriais Rotacionadas</h5>
+                                <small>Rotated Factor Matrix - {{ resultados.fatorial.rotacao|title }}</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-sm small-table math-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Variável</th>
+                                                {% for i in range(resultados.fatorial.n_fatores) %}
+                                                <th class="text-center">Fator {{ i+1 }}</th>
+                                                {% endfor %}
+                                                <th class="text-center">Comunalidade</th>
+                                                <th class="text-center">Singularidade</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for var_name in resultados.variaveis_numericas %}
+                                            <tr>
+                                                <td><strong>{{ var_name }}</strong></td>
+                                                {% for i in range(resultados.fatorial.n_fatores) %}
+                                                {% set carga = resultados.fatorial.cargas_rotacionadas.loc[var_name, 'Fator_' ~ (i+1)|string] %}
+                                                <td class="text-center {{ 'table-primary' if carga|abs >= 0.5 else '' }}">
+                                                    {{ "%.3f"|format(carga) }}
+                                                    {% if carga|abs >= 0.5 %}
+                                                    <span class="badge bg-success ms-1">●</span>
+                                                    {% endif %}
+                                                </td>
+                                                {% endfor %}
+                                                <td class="text-center">{{ "%.3f"|format(resultados.fatorial.comunalidades.loc[var_name, 'Extração']) }}</td>
+                                                <td class="text-center">{{ "%.3f"|format(resultados.fatorial.comunalidades.loc[var_name, 'Singularidade']) }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6>📝 Interpretação das Cargas</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="small">
+                                                    <li><span class="badge bg-success">●</span> Carga significativa (≥ |0.5|)</li>
+                                                    <li><strong>Comunalidade:</strong> Variância explicada pelos fatores</li>
+                                                    <li><strong>Singularidade:</strong> Variância não explicada (1 - Comunalidade)</li>
+                                                    <li><strong>Comunalidade > 0.6:</strong> Boa representação pelo modelo</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6>⚙️ Informações Técnicas</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="small mb-0">
+                                                    <li><strong>Método de Extração:</strong> Análise de Componentes Principais</li>
+                                                    <li><strong>Método de Rotação:</strong> {{ resultados.fatorial.rotacao|title }}</li>
+                                                    <li><strong>Critério de Retenção:</strong> Autovalor > 1 (Kaiser)</li>
+                                                    <li><strong>Comunalidade Média:</strong> {{ "%.3f"|format(resultados.fatorial.comunalidades['Extração'].mean()) }}</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Matriz de Transformação -->
+                    <div class="tab-pane fade" id="transformacao" role="tabpanel">
+                        <!-- Conteúdo existente da aba Transformação -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h5>🔄 Matriz de Transformação de Componentes</h5>
+                                <small>Component Transformation Matrix - {{ resultados.fatorial.rotacao|title }}</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <strong>📖 Interpretação:</strong> Esta matriz mostra como os componentes iniciais são transformados nos componentes rotacionados.
+                                    A matriz de transformação T satisfaz: <em>A<sub>rotacionada</sub> = A<sub>inicial</sub> × T</em>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-sm small-table math-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Componente</th>
+                                                {% for i in range(resultados.fatorial.n_fatores) %}
+                                                <th class="text-center">Fator {{ i+1 }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for i in range(resultados.fatorial.n_fatores) %}
+                                            <tr>
+                                                <td><strong>Fator {{ i+1 }}</strong></td>
+                                                {% for j in range(resultados.fatorial.n_fatores) %}
+                                                <td class="text-center">{{ "%.4f"|format(resultados.fatorial.matriz_transformacao.iloc[i, j]) }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="mt-3">
+                                    <h6>📚 Notas Técnicas:</h6>
+                                    <ul class="small">
+                                        {% if resultados.fatorial.rotacao in ['varimax', 'quartimax', 'equamax'] %}
+                                        <li>Para rotações ortogonais ({{ resultados.fatorial.rotacao|title }}): A matriz de transformação é ortogonal (T × T' = I)</li>
+                                        {% else %}
+                                        <li>Para rotações oblíquas ({{ resultados.fatorial.rotacao|title }}): A matriz mostra as correlações entre os fatores</li>
+                                        {% endif %}
+                                        <li>Os valores representam os coeficientes para transformar os fatores iniciais em fatores rotacionados</li>
+                                        <li>Esta matriz é usada para calcular os scores fatoriais rotacionados</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NOVA ABA: Exportar Resultados -->
+                    <div class="tab-pane fade" id="exportar" role="tabpanel">
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card border-0">
+                                    <div class="card-header bg-success text-white text-center py-4">
+                                        <h2 class="mb-2"><i class="fas fa-download"></i></h2>
+                                        <h4 class="mb-0">Exportar Resultados Completos</h4>
+                                        <p class="mb-0 mt-2">Baixe todos os resultados para uso em outros softwares ou relatórios</p>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-4">
+                                            <!-- CSV -->
+                                            <div class="col-md-4">
+                                                <div class="card h-100 export-card border-primary">
+                                                    <div class="card-body text-center p-4">
+                                                        <div class="mb-3">
+                                                            <i class="fas fa-file-csv fa-3x text-primary"></i>
+                                                        </div>
+                                                        <h5 class="card-title text-primary">CSV Completo</h5>
+                                                        <p class="card-text text-muted">
+                                                            Todos os resultados em arquivos CSV organizados (ZIP)
+                                                        </p>
+                                                        <form action="/exportar_csv" method="post" class="mt-3">
+                                                            <input type="hidden" name="session_id" value="{{ resultados.session_id }}">
+                                                            <button type="submit" class="btn btn-outline-primary btn-lg">
+                                                                <i class="fas fa-download"></i> Baixar ZIP
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Excel -->
+                                            <div class="col-md-4">
+                                                <div class="card h-100 export-card border-success">
+                                                    <div class="card-body text-center p-4">
+                                                        <div class="mb-3">
+                                                            <i class="fas fa-file-excel fa-3x text-success"></i>
+                                                        </div>
+                                                        <h5 class="card-title text-success">Excel Completo</h5>
+                                                        <p class="card-text text-muted">
+                                                            Planilha com múltiplas abas organizadas e formatadas
+                                                        </p>
+                                                        <form action="/exportar_excel" method="post" class="mt-3">
+                                                            <input type="hidden" name="session_id" value="{{ resultados.session_id }}">
+                                                            <button type="submit" class="btn btn-outline-success btn-lg">
+                                                                <i class="fas fa-download"></i> Baixar Excel
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- PDF -->
+                                            <div class="col-md-4">
+                                                <div class="card h-100 export-card border-danger">
+                                                    <div class="card-body text-center p-4">
+                                                        <div class="mb-3">
+                                                            <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                                                        </div>
+                                                        <h5 class="card-title text-danger">Relatório PDF</h5>
+                                                        <p class="card-text text-muted">
+                                                            Relatório profissional formatado para impressão e apresentação
+                                                        </p>
+                                                        <form action="/exportar_pdf" method="post" class="mt-3">
+                                                            <input type="hidden" name="session_id" value="{{ resultados.session_id }}">
+                                                            <button type="submit" class="btn btn-outline-danger btn-lg">
+                                                                <i class="fas fa-download"></i> Baixar PDF
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Conteúdo Incluído -->
+                                        <div class="card mt-5">
+                                            <div class="card-header bg-info text-white">
+                                                <h6 class="mb-0"><i class="fas fa-list-check"></i> Conteúdo Incluído na Exportação</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <ul class="list-group list-group-flush">
+                                                            <li class="list-group-item">✅ Estatísticas Descritivas</li>
+                                                            <li class="list-group-item">✅ Testes de Normalidade</li>
+                                                            <li class="list-group-item">✅ Matriz de Correlação</li>
+                                                            <li class="list-group-item">✅ Cargas Fatoriais</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <ul class="list-group list-group-flush">
+                                                            <li class="list-group-item">✅ Comunalidades</li>
+                                                            <li class="list-group-item">✅ Scores Fatoriais</li>
+                                                            <li class="list-group-item">✅ Matriz de Transformação</li>
+                                                            <li class="list-group-item">✅ Resumo da Análise</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+				</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Ativar todas as abas corretamente
+        var triggerTabList = [].slice.call(document.querySelectorAll('#myTab button'))
+        triggerTabList.forEach(function (triggerEl) {
+            var tabTrigger = new bootstrap.Tab(triggerEl)
+            triggerEl.addEventListener('click', function (event) {
+                event.preventDefault()
+                tabTrigger.show()
+            })
+        })
+    </script>
+</body>
+</html>

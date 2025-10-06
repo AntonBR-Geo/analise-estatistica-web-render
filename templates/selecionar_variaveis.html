@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecionar Variáveis para Análise</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .variaveis-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .variavel-item {
+            padding: 5px 10px;
+            margin: 2px 0;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .variavel-item:hover {
+            background-color: #f8f9fa;
+        }
+        .variavel-item.numerica {
+            border-left: 4px solid #198754;
+        }
+        .variavel-item.nao-numerica {
+            border-left: 4px solid #6c757d;
+            opacity: 0.6;
+        }
+        .contador {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        .selecionadas-container {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 10px;
+            min-height: 100px;
+        }
+        .badge-numero {
+            background-color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h2 class="mb-0">📋 Seleção de Variáveis para Análise</h2>
+                        <small>Selecione as variáveis numéricas que deseja incluir na análise</small>
+                    </div>
+                    <div class="card-body">
+                        <form action="/analisar" method="post">
+                            <input type="hidden" name="session_id" value="{{ session_id }}">
+                            
+                            <div class="row">
+                                <!-- Coluna 1: Variáveis Disponíveis -->
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">📊 Variáveis Numéricas</h5>
+                                            <span class="contador badge bg-primary">{{ variaveis_numericas|length }} variáveis</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <input type="text" class="form-control" id="filtroVariaveis" 
+                                                       placeholder="🔍 Filtrar variáveis...">
+                                            </div>
+                                            <div class="variaveis-container" id="variaveisDisponiveis">
+                                                {% for var in variaveis_numericas %}
+                                                <div class="variavel-item numerica">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input variavel-checkbox" type="checkbox" 
+                                                               name="variaveis_selecionadas" value="{{ var }}" 
+                                                               id="var_{{ loop.index }}"
+                                                               onchange="atualizarSelecionadas()">
+                                                        <label class="form-check-label" for="var_{{ loop.index }}">
+                                                            {{ var }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="mt-3 d-grid gap-2 d-md-flex justify-content-md-end">
+                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="selecionarTodas()">
+                                                    ✅ Selecionar Todas
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="limparSelecao()">
+                                                    ❌ Limpar Seleção
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Coluna 2: Variáveis Selecionadas e Configurações -->
+                                <div class="col-md-6">
+                                    <!-- Variáveis Selecionadas -->
+                                    <div class="card mb-3">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">✅ Variáveis Selecionadas</h5>
+                                            <span class="contador badge bg-success" id="contadorSelecionadas">0</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="selecionadas-container" id="variaveisSelecionadas">
+                                                <p class="text-muted text-center mb-0" id="nenhumaSelecionada">
+                                                    Nenhuma variável selecionada
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Variáveis Não Numéricas (apenas informativo) -->
+                                    {% if variaveis_nao_numericas %}
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">📝 Variáveis Não Numéricas</h6>
+                                            <small class="contador">{{ variaveis_nao_numericas|length }} variáveis categóricas</small>
+                                        </div>
+                                        <div class="card-body py-2">
+                                            <div class="variaveis-container" style="max-height: 120px; font-size: 0.9em;">
+                                                {% for var in variaveis_nao_numericas %}
+                                                <div class="variavel-item nao-numerica small">
+                                                    {{ var }}
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            <small class="text-muted">Variáveis categóricas não são incluídas na análise fatorial</small>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Configurações da Análise -->
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">⚙️ Configurações da Análise</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-2 mb-3">
+                                                <div class="col-md-6">
+                                                    <label for="n_fatores" class="form-label small">Número de Fatores</label>
+                                                    <input type="number" class="form-control form-control-sm" id="n_fatores" name="n_fatores" 
+                                                           min="1" placeholder="Auto">
+                                                </div>
+                                               
+												<div class="form-group">
+													<label for="rotacao">Método de Rotação:</label>
+													<select class="form-control" id="rotacao" name="rotacao" required>
+														<option value="varimax" selected>Varimax ✓</option>
+														<option value="quartimax" disabled style="color: #999;">Quartimax (implementação futura)</option>
+														<option value="equamax" disabled style="color: #999;">Equamax (implementação futura)</option>
+														<option value="promax" disabled style="color: #999;">Promax (implementação futura)</option>
+														<option value="oblimin" disabled style="color: #999;">Oblimin (implementação futura)</option>
+													</select>
+												</div>
+                                            </div>
+
+                                            <div class="alert alert-info py-2">
+                                                <small>
+                                                    <strong>💡 Dica:</strong> Selecione pelo menos 2 variáveis relacionadas teoricamente
+                                                </small>
+                                            </div>
+
+                                            <button type="submit" class="btn btn-success w-100" id="btnAnalisar" disabled>
+                                                🚀 Executar Análise
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function atualizarSelecionadas() {
+            const checkboxes = document.querySelectorAll('.variavel-checkbox:checked');
+            const contador = document.getElementById('contadorSelecionadas');
+            const container = document.getElementById('variaveisSelecionadas');
+            const btnAnalisar = document.getElementById('btnAnalisar');
+            const nenhumaSelecionada = document.getElementById('nenhumaSelecionada');
+            
+            contador.textContent = checkboxes.length;
+            
+            if (checkboxes.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center mb-0" id="nenhumaSelecionada">Nenhuma variável selecionada</p>';
+                btnAnalisar.disabled = true;
+            } else {
+                let html = '';
+                checkboxes.forEach((checkbox, index) => {
+                    html += `<div class="d-flex justify-content-between align-items-center mb-1 p-1 bg-light rounded">
+                                <span class="small">${checkbox.value}</span>
+                                <span class="badge badge-numero">${index + 1}</span>
+                            </div>`;
+                });
+                container.innerHTML = html;
+                btnAnalisar.disabled = checkboxes.length < 2;
+                
+                // Atualizar texto do botão
+                btnAnalisar.innerHTML = `🚀 Executar Análise (${checkboxes.length} variáveis)`;
+            }
+        }
+
+        function selecionarTodas() {
+            const checkboxes = document.querySelectorAll('.variavel-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            atualizarSelecionadas();
+        }
+
+        function limparSelecao() {
+            const checkboxes = document.querySelectorAll('.variavel-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            atualizarSelecionadas();
+        }
+
+        // Filtro de variáveis
+        document.getElementById('filtroVariaveis').addEventListener('input', function(e) {
+            const filtro = e.target.value.toLowerCase();
+            const itens = document.querySelectorAll('#variaveisDisponiveis .variavel-item');
+            
+            itens.forEach(item => {
+                const texto = item.textContent.toLowerCase();
+                if (texto.includes(filtro)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Inicializar
+        atualizarSelecionadas();
+    </script>
+</body>
+</html>
