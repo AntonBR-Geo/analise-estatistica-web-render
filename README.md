@@ -28,23 +28,18 @@ Ideal para pesquisadores, analistas e estudantes que precisam de uma ferramenta 
   - Número fixo de componentes (definido pelo usuário)
 - **Métodos de rotação**:
   - **Varimax** (ortogonal) ✅ **padrão**
-  - **Equamax** (ortogonal)
-  - **Promax** (oblíqua)
+  - **Equamax** (ortogonal)(Não implementado)
+  - **Promax** (oblíqua)(não implementado)
 - **Saídas completas**:
   - Gráfico de escarpa (scree plot)
   - Tabela de variância explicada (solução inicial e rotacionada)
   - Matriz de componente rotativa com comunalidades e singularidades
   - Matriz de transformação de componente
-  - Número de iterações até convergência (máx. 25)
 
 ### 🇧🇷 Especificidades Brasileiras
 - ✅ Leitura de CSV com separador `;` e decimal `,`
 - ✅ Formatação de números com vírgula como separador decimal
 - ✅ Casas decimais inteligentes (inteiros sem casas, decimais com 3 casas)
-
-### 🎯 Preparação para AHP
-- Cálculo de **índice sintético ponderado** baseado nas componentes
-- Dados prontos para uso em matrizes de comparação pareada
 
 ---
 
